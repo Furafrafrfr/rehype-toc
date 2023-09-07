@@ -3,4 +3,7 @@
 # https://jstools.dev/eslint-config/
 
 root: true
-extends: "@jsdevtools"
+extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'plugin:mocha/recommended']
+parser: '@typescript-eslint/parser'
+plugins: ['@typescript-eslint', "eslint-plugin-mocha"]
+

@@ -2,11 +2,27 @@ import { Node } from "unist";
 import { CustomizationHook } from "./customization-hooks";
 import { HeadingTagName, HtmlElementNode, ListItemNode } from "./types";
 
+export type MainRelativeInsertPosition =
+  | "beforebegin"
+  | "afterbegin"
+  | "beforeend"
+  | "afterend";
+
+export interface NodeRelativeInsertPosition {
+  tagNames: (keyof HTMLElementTagNameMap)[];
+  contents?: RegExp;
+}
+
 /**
- * The different positions at which the table of contents can be inserted,
- * relative to the `<main>` element.
+ * The different positions at which the table of contents can be inserted.
+ *
+ * If string, this represents the postion relative to the `<main>` element.
+ *
+ * If object, this represents the position relative to the spesific element and pattern text of the element
  */
-export type InsertPosition = "beforebegin" | "afterbegin" | "beforeend" | "afterend";
+export type InsertPosition =
+  | MainRelativeInsertPosition
+  | NodeRelativeInsertPosition;
 
 /**
  * Options for the Rehype TOC plugin
@@ -61,7 +77,10 @@ export interface Options {
    * existing node. You can return a falsy value to prevent the item from being added to the
    * table of contents.
    */
-  customizeTOCItem?(tocItem: ListItemNode, heading: HtmlElementNode): Node | boolean | undefined;
+  customizeTOCItem?(
+    tocItem: ListItemNode,
+    heading: HtmlElementNode
+  ): Node | boolean | undefined;
 }
 
 /**
@@ -116,12 +135,20 @@ export class NormalizedOptions {
     let cssClasses = options.cssClasses || {};
 
     this.nav = options.nav === undefined ? true : Boolean(options.nav);
-    this.position = options.position || "afterbegin";
+    if (!options.position || typeof options.position === "string") {
+      this.position = options.position || "afterbegin";
+    } else {
+      this.position = {
+        contents: /toc|table[ -]of[ -]contents?/i,
+        ...options.position,
+      };
+    }
     this.headings = options.headings || ["h1", "h2", "h3", "h4", "h5", "h6"];
     this.cssClasses = {
       toc: cssClasses.toc === undefined ? "toc" : cssClasses.toc,
       list: cssClasses.list === undefined ? "toc-level" : cssClasses.list,
-      listItem: cssClasses.listItem === undefined ? "toc-item" : cssClasses.listItem,
+      listItem:
+        cssClasses.listItem === undefined ? "toc-item" : cssClasses.listItem,
       link: cssClasses.link === undefined ? "toc-link" : cssClasses.link,
     };
     this.customizeTOC = options.customizeTOC;
@@ -132,7 +159,10 @@ export class NormalizedOptions {
 /**
  * Builds a CSS class string from the given user-defined class name
  */
-export function buildClass(name: string, suffix: string | number): string | undefined {
+export function buildClass(
+  name: string,
+  suffix: string | number
+): string | undefined {
   if (name) {
     let cssClass = name;
 

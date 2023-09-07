@@ -1,5 +1,5 @@
 import { Processor, Transformer } from "unified";
-import { Node } from "unist";
+import { Node } from "hast";
 import { createTOC } from "./create-toc";
 import { customizationHooks } from "./customization-hooks";
 import { findHeadings } from "./fiind-headings";
