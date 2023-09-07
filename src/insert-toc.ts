@@ -1,4 +1,5 @@
-import { Node } from "unist";
+import { Node } from "hast";
+import { toText } from "hast-util-to-text";
 import { NormalizedOptions } from "./options";
 import { HtmlElementNode } from "./types";
 
@@ -10,8 +11,25 @@ import { HtmlElementNode } from "./types";
  * @param parent - The parent node of `target`. This is used for inserting `toc` before/after `target`
  * @param options - The `position` option determines where `toc` is inserted
  */
-export function insertTOC(toc: Node, target: HtmlElementNode, parent: HtmlElementNode, { position }: NormalizedOptions): void {
+export function insertTOC(
+  toc: Node,
+  target: HtmlElementNode,
+  parent: HtmlElementNode,
+  { position }: NormalizedOptions
+): void {
   let childIndex = parent.children!.indexOf(target);
+  if (typeof position === "object") {
+    if (parent.children) {
+      // console.log(parent.children);
+      const index = parent.children.findIndex(
+        (node) =>
+          position.tagNames.some((tag) => tag === node.tagName) &&
+          position.contents?.test(toText(node as any))
+      );
+      parent.children.splice(index + 1, 0, toc);
+    }
+    return;
+  }
 
   switch (position) {
     case "beforebegin":

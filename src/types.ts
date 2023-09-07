@@ -1,4 +1,4 @@
-import { Node } from "unist";
+import { Node } from "hast";
 
 /**
  * The `tagName` property of HTML heading nodes
